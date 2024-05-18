@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Control</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        background-color: navy;
+        color: white;
+        }
+        .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        }
+        .card {
+        margin: 20px;
+        padding: 20px;
+        border: 1px solid #3a3939;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card h2 {
+        margin-bottom: 10px;
+        color: #090909;
+        }
+        .card p {
+        margin-bottom: 10px;
+        color: #090909;
+        }
+        .card button {
+        padding: 10px 20px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        }
+        .card button:hover {
+        background-color: #0056b3;
+        }
+    </style>
+    </head>
+    <body>
+    <h1 style="text-align: center;">LED Control</h1>
+
+    <div class="container">
+        <!-- ESP8266_1 Card -->
+        <div class="card">
+            <!-- Controls for ESP8266_1 -->
+            <div id="esp8266_1">
+            <h2>ESP8266_1</h2>
+            <p>LED Status: <span id="ledStatus_1"></span></p>
+            <button onclick="handleToggleLED('esp8266_1')"> Mod1 LED </button>
+            <p>Elapsed Time: <span id="elaspedTime_1"></span></p>
+            </div>
+        </div>
+
+        <!-- ESP8266_2 Card -->
+        <div class="card">
+            <!-- Controls for ESP8266_2 -->
+            <div id="esp8266_2">
+            <h2>ESP8266_2</h2>
+            <p>LED Status: <span id="ledStatus_2"></span></p>
+            <button onclick="handleToggleLED('esp8266_2')"> Mod2 LED </button>
+            <p>Elapsed Time: <span id="elaspedTime_2"></span></p>
+            </div>
+        </div>
+
+        <!-- ESP8266_3 Card -->
+        <div class="card">
+            <!-- Controls for ESP8266_3 -->
+            <div id="esp8266_3">
+            <h2>ESP8266_3</h2>
+            <p>LED Status: <span id="ledStatus_3"></span></p>
+            <button onclick="handleToggleLED('esp8266_3')"> Mod3 LED </button>
+            <p>Elapsed Time: <span id="elaspedTime_3"></span></p>
+            </div>
+        </div>
+
+        <!-- ESP8266_4 Card -->
+        <div class="card">
+            <!-- Controls for ESP8266_4 -->
+            <div id="esp8266_4">
+            <h2>ESP8266_4</h2>
+            <p>LED Status: <span id="ledStatus_4"></span></p>
+            <button onclick="handleToggleLED('esp8266_4')"> Mod4 LED </button>
+            <p>Elapsed Time: <span id="elaspedTime_4"></span></p>
+            </div>
+        </div>
+
+        <!-- ESP8266_5 Card -->
+        <div class="card">
+            <!-- Controls for ESP8266_5 -->
+            <div id="esp8266_5">
+            <h2>ESP8266_5</h2>
+            <p>LED Status: <span id="ledStatus_5"></span></p>
+            <button onclick="handleToggleLED('esp8266_5')"> Mod5 LED </button>
+            <p>Elapsed Time: <span id="elaspedTime_5"></span></p>
+            </div>
+        </div>
+
+        <!-- ESP8266_6 Card -->
+        <div class="card">
+            <!-- Controls for ESP8266_6 -->
+            <div id="esp8266_6">
+            <h2>ESP8266_6</h2>
+            <p>LED Status: <span id="ledStatus_6"></span></p>
+            <button onclick="handleToggleLED('esp8266_6')"> Mod6 LED </button>
+            <p>Elapsed Time: <span id="elaspedTime_6"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript to interact with the server -->
+    <script>
+        // Listen for reload command from ESP8266
+        function reload(module) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://" + module + ".local/reload", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        // Extract the module number from the event data
+                        var moduleId = xhr.responseText.trim().split("_")[1];
+                        document.getElementById("reload_" + moduleId).innerHTML = xhr.responseText;
+                        handleReload(moduleId);
+                    } else {
+                        console.log("Error in reload: " + xhr.status);
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // Function to handle reload command from ESP8266
+        function handleReload(mod) {
+            // Reload the card for the specified module after a delay of 1 second
+            reloadCard("esp8266_" + mod);
+        }
+
+        // Function to update LED status and elapsed time when page loads
+        window.onload = function() {
+            // Update LED status and elapsed time for each module
+            for (var i = 1; i <= 6; i++) {
+                var module = "esp8266_" + i;
+                handleGetLEDStatus(module);
+                handleGetElaspedTime(module);
+            }
+        };
+
+        // Function to handle toggle LED button click
+        function handleToggleLED(module) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://" + module + ".local/toggleLED", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var moduleId = module.split("_")[1];
+                        // Update LED status
+                        document.getElementById("ledStatus_" + moduleId).innerHTML = xhr.responseText;
+                        // Reload card if LED is turned off
+                        if (xhr.responseText === "OFF") {
+                            reloadCard(module);
+                        }
+                        // Clear elapsed time if LED is turned off
+                        if (xhr.responseText === "ON") {
+                            document.getElementById("elaspedTime_" + moduleId).innerHTML = "0 seconds";
+                        }
+                    } else {
+                        console.log("Error toggling LED: " + xhr.status);
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // Function to reload the content of the specific card
+        function reloadCard(module) {
+            var cardId = module.split("_")[1];
+            var cardContainer = document.getElementById(module);
+            if (cardContainer) {
+                var cardContent = cardContainer.innerHTML;
+                cardContainer.innerHTML = cardContent; // This effectively reloads the card content
+                // After reloading, update LED status and elapsed time
+                handleGetLEDStatus(module);
+                handleGetElaspedTime(module);
+            } else {
+                console.log("Card container not found: " + module);
+            }
+        }
+
+        // Function to update LED status for a specific module
+        function handleGetLEDStatus(module) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://" + module + ".local/getLEDStatus", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    // Update LED status
+                    document.getElementById("ledStatus_" + module.split("_")[1]).innerHTML = xhr.responseText;
+                    
+                } else {
+                    console.log("Error getting LED status");
+                }
+            };
+            xhr.send();
+        }
+
+        // Function to update elapsed time for a specific module
+        function handleGetElaspedTime(module) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://" + module + ".local/getElaspedTime", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    // Update elapsed time
+                    document.getElementById("elaspedTime_" + module.split("_")[1]).innerHTML = xhr.responseText;
+                } else {
+                    console.log("Error getting elasped time");
+                }
+            };
+            xhr.send();
+        }
+
+    </script>   
+</body>
+</html>
